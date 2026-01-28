@@ -1,0 +1,37 @@
+SWEEPSTAKES COMPLIANCE REPORT
+================================
+
+DOCUMENT INFORMATION
+----------------------
+Sweepstakes Name: Lex_sweep
+Door Count: 1
+Door Location: Tallahassee
+Primary Prize Type: cash
+Minimum Age: 18
+Eligible States: florida
+Start Time: 12
+End Time: 12
+Winner Selection Time: 1
+Winner Response Deadline: 2
+
+PRIZE LEVELS
+------------
+Level 1: Cash - $900.0
+Level 2: Cash - $300.0
+
+HARD CONSTRAINTS APPLIED
+------------------------
+- The promotion is classified as a game of chance.
+- Winners must be selected at random.
+- All eligible entrants must have an equal chance to win regardless of method of entry.
+- Consideration may not be required unless a free Alternate Method of Entry (AMOE) is provided.
+- A sweepstakes that includes consideration without a free AMOE is considered an illegal lottery.
+- AMOE entry may require only minimal information such as name, address, email, and phone number.
+- Eligibility is limited to residents of the 50 United States and Washington, D.C.
+- Eligibility may be restricted geographically, including by state, radius, or address.
+- Eligibility may be limited to predefined groups such as members of a loyalty program.
+- Advertising must be targeted only to individuals eligible to participate.
+- Winners receiving prizes valued over $600 require enhanced identity verification.
+- All winners must sign an affidavit confirming eligibility and granting permission for use of name, image, likeness, and entry.
+- Winners receiving prizes above the reporting threshold must complete IRS Form W-9 and the sponsor must file a 1099-MISC or 1099-NEC.
+- Alcohol- and tobacco-related prizes are subject to additional regulatory scrutiny.

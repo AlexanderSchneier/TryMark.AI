@@ -1,0 +1,151 @@
+{
+  "version": "1.0",
+  "type": "hard_constraints",
+  "last_updated": "2026-01-27",
+  "constraints": [
+    {
+      "id": "HC-001",
+      "category": "sweepstakes_classification",
+      "rule": "The promotion is classified as a game of chance.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-002",
+      "category": "sweepstakes_classification",
+      "rule": "Winners must be selected at random.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-003",
+      "category": "sweepstakes_classification",
+      "rule": "All eligible entrants must have an equal chance to win regardless of method of entry.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-004",
+      "category": "entry_method",
+      "rule": "Consideration may not be required unless a free Alternate Method of Entry (AMOE) is provided.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-005",
+      "category": "entry_method",
+      "rule": "A sweepstakes that includes consideration without a free AMOE is considered an illegal lottery.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-006",
+      "category": "entry_method",
+      "rule": "AMOE entry may require only minimal information such as name, address, email, and phone number.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-007",
+      "category": "entry_method",
+      "rule": "Requiring entrants to visit a physical store is classified as consideration.",
+      "jurisdictions": ["US-NE", "US-VA"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-008",
+      "category": "entry_method",
+      "rule": "Entrants may not be automatically entered unless the existence of an AMOE is clearly disclosed.",
+      "jurisdictions": ["US-TX"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-009",
+      "category": "eligibility",
+      "rule": "Eligibility is limited to residents of the 50 United States and Washington, D.C.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-010",
+      "category": "eligibility",
+      "rule": "Eligibility may be restricted geographically, including by state, radius, or address.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-011",
+      "category": "eligibility",
+      "rule": "Eligibility may be limited to predefined groups such as members of a loyalty program.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-012",
+      "category": "eligibility",
+      "rule": "Advertising must be targeted only to individuals eligible to participate.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-013",
+      "category": "bonding_registration",
+      "rule": "If the total prize pool exceeds $5,000 and New York or Florida residents are eligible, the sweepstakes must be bonded and registered in each applicable state.",
+      "jurisdictions": ["US-NY", "US-FL"],
+      "thresholds": {
+        "total_prize_value_usd": 5000
+      },
+      "severity": "hard"
+    },
+    {
+      "id": "HC-014",
+      "category": "bonding_registration",
+      "rule": "Rhode Island registration is required only if the total prize value exceeds $500 and entry occurs at a physical retail location within the state.",
+      "jurisdictions": ["US-RI"],
+      "thresholds": {
+        "total_prize_value_usd": 500
+      },
+      "severity": "hard"
+    },
+    {
+      "id": "HC-015",
+      "category": "winner_clearance",
+      "rule": "Winners receiving prizes valued over $600 require enhanced identity verification.",
+      "jurisdictions": ["US-FEDERAL"],
+      "thresholds": {
+        "prize_value_usd": 600,
+        "future_increase_usd": 2000,
+        "effective_year": 2026
+      },
+      "severity": "hard"
+    },
+    {
+      "id": "HC-016",
+      "category": "winner_clearance",
+      "rule": "All winners must sign an affidavit confirming eligibility and granting permission for use of name, image, likeness, and entry.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-017",
+      "category": "winner_clearance",
+      "rule": "Winners receiving prizes above the reporting threshold must complete IRS Form W-9 and the sponsor must file a 1099-MISC or 1099-NEC.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-018",
+      "category": "prizes",
+      "rule": "Alcohol- and tobacco-related prizes are subject to additional regulatory scrutiny.",
+      "jurisdictions": ["US-FEDERAL"],
+      "severity": "hard"
+    },
+    {
+      "id": "HC-019",
+      "category": "prizes",
+      "rule": "Alcohol- and tobacco-related prizes receive heightened scrutiny.",
+      "jurisdictions": ["US-MA", "US-NJ", "US-VA"],
+      "severity": "hard"
+    }
+  ]
+}
