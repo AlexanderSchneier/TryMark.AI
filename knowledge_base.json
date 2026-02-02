@@ -1,0 +1,149 @@
+[
+  {
+    "id": "Sweeps_00001_2After-Rules.docx_Intro_dc0f77",
+    "doc_type": "official_rules",
+    "section": "Intro",
+    "channel": null,
+    "hard_constraint": false,
+    "text": "[Sponsor Name] [Sweepstakes Name]\nOFFICIAL RULES\nNO PURCHASE NECESSARY TO ENTER OR WIN. A PURCHASE WILL NOT INCREASE YOUR CHANCES OF WINNING.",
+    "tags": []
+  },
+  {
+    "id": "Sweeps_00003_1Before.docx_web_556ee2",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "web",
+    "hard_constraint": false,
+    "text": "NO PURCHASE NECESSARY TO ENTER OR WIN IN THE [SWEEPSTAKES NAME]. Open to legal residents of the 50 US & DC, 18 or older and have reached the age of majority in state of jurisdiction. Void where prohibited. Sweepstakes starts 8/22/23 at 12:00 AM ET and ends 10/3/23 at 11:59 PM ET. For Official Rules, which govern, click here. Sponsor: Eggland’s Best, LLC.\n[“here”: [Sweepstakes URL]]",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00003_1Before.docx_facebook_208d49",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "facebook",
+    "hard_constraint": false,
+    "text": "No Purchase Necessary. Void where prohibited. Open to legal residents of the 50 US and DC, 18 or older. Sweepstakes starts on 8/22/23 at 12:00 AM ET and ends 10/3/23 at 11:59 PM ET. For Official Rules, which govern, visit [Sweepstakes URL].",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00003_1Before.docx_instagram_294ca2",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "instagram",
+    "hard_constraint": false,
+    "text": "No Purchase Necessary. Void where prohibited. Open to legal residents of the 50 US and DC, 18+. Sweepstakes ends 10/3/23. For Official Rules, which govern, visit [Sweepstakes URL] [or, “See link in bio”].",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00003_1Before.docx_twitter_d458bc",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "twitter",
+    "hard_constraint": false,
+    "text": "NoPurNec. 18+, Void outside 50 US, ends 10/3/23. Rules: [Sweepstakes URL]",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00009_Before.docx_instagram_491dc4",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "instagram",
+    "hard_constraint": false,
+    "text": "No Purchase Necessary. Void where prohibited. Open to legal residents of the 50 US & DC, 18+. Sweepstakes ends 11:59 PM ET 1/7/24. Visit [URL] for Official Rules.\nInstagram - Alternative\nNo Purchase Necessary. Void where prohibited. Open to legal residents of the 50 US & DC, 18+. Sweepstakes ends 11:59 PM ET 1/7/24. Visit [URL] for photo/video submission guidelines and Official Rules.",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00009_Before.docx_web_f35d81",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "web",
+    "hard_constraint": false,
+    "text": "NO PURCHASE NECESSARY TO ENTER OR WIN IN THE [SPONSOR’S NAME] [SWEEPSTAKES NAME] SWEEPSTAKES. Open to legal residents of the 50 US & DC, 18 or older. Void where prohibited. Sweepstakes starts 11/6/23 and ends 1/7/24. For Official Rules, which govern, visit [URL]. Sponsor: [SPONSOR’S NAME].",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00008_Before.docx_web_92b71c",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "web",
+    "hard_constraint": false,
+    "text": "NO PURCHASE NECESSARY TO ENTER OR WIN IN THE [SPONSOR’S NAME] [SWEEPSTAKES NAME] SWEEPSTAKES. Open to legal residents of the 50 US & DC, 18 or older and have reached the age of majority in state of jurisdiction. Void where prohibited. Sweepstakes starts 1/13/26 at 9:00 AM ET and ends 3/10/26 at 11:59 PM ET. For Official Rules, which govern, click here. Sponsor: [SPONSOR’S NAME]\n[“here”: URL]",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00008_Before.docx_facebook_dd6baf",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "facebook",
+    "hard_constraint": false,
+    "text": "No Purchase Necessary. Void where prohibited. Open to legal residents of the 50 US and DC, 18 or older. Sweepstakes starts on 1/13/26 at 9:00 AM ET and ends 3/10/26 at 11:59 PM ET. For Official Rules, which govern, visit www.EBFamilySweeps.com.",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00008_Before.docx_instagram_6cb3f4",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "instagram",
+    "hard_constraint": false,
+    "text": "No Purchase Necessary. Void where prohibited. Open to legal residents of the 50 US and DC, 18+. Sweepstakes ends 3/10/26. For Official Rules, which govern, visit [URL] [or, “See link in bio”].",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00008_Before.docx_twitter_435b31",
+    "doc_type": "abbreviated_disclosure",
+    "section": null,
+    "channel": "twitter",
+    "hard_constraint": false,
+    "text": "NoPurNec. 18+, Void outside 50 US, ends 3/10/26. Rules: [URL]",
+    "tags": [
+      "abbreviated",
+      "disclosure"
+    ]
+  },
+  {
+    "id": "Sweeps_00002_2After-Rules.docx_Intro_9d851a",
+    "doc_type": "official_rules",
+    "section": "Intro",
+    "channel": null,
+    "hard_constraint": false,
+    "text": "[Sponsor Name] [Sweepstakes Name]\nOFFICIAL RULES\nNO PURCHASE NECESSARY TO ENTER OR WIN. A PURCHASE WILL NOT INCREASE YOUR CHANCES OF WINNING.",
+    "tags": []
+  },
+  {
+    "id": "Sweeps_00003_2After-Rules.docx_Intro_c6035f",
+    "doc_type": "official_rules",
+    "section": "Intro",
+    "channel": null,
+    "hard_constraint": false,
+    "text": "[Sponsor Name] [Sweepstakes Name]\nOFFICIAL RULES\nNO PURCHASE NECESSARY TO ENTER OR WIN. A PURCHASE WILL NOT INCREASE YOUR CHANCES OF WINNING. VOID WHERE PROHIBITED.",
+    "tags": []
+  }
+]

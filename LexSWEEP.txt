@@ -1,0 +1,55 @@
+SWEEPSTAKES COMPLIANCE REPORT
+================================
+
+DOCUMENT INFORMATION
+----------------------
+Sweepstakes Name: LexSWEEP
+Door Count: 1
+Door Location: Tallahasee
+Primary Prize Type: cash
+Minimum Age: 18
+Eligible States: florida
+Start Time: 12
+End Time: 12
+Winner Selection Time: 5
+Winner Response Deadline: 5
+
+PRIZE LEVELS
+------------
+Level 1: Cash - $850.0
+Level 2: Cash - $200.0
+
+COMPLIANCE REQUIREMENTS SUMMARY
+--------------------------------
+
+FOUNDATIONAL LEGAL REQUIREMENTS
+--------------------------------
+- The promotion is classified as a game of chance.
+- Winners must be selected at random.
+- All eligible entrants must have an equal chance to win regardless of method of entry.
+- Consideration may not be required unless a free Alternate Method of Entry (AMOE) is provided.
+- A sweepstakes that includes consideration without a free AMOE is considered an illegal lottery.
+- AMOE entry may require only minimal information such as name, address, email, and phone number.
+- Eligibility is limited to residents of the 50 United States and Washington, D.C.
+- Eligibility may be restricted geographically, including by state, radius, or address.
+- Eligibility may be limited to predefined groups such as members of a loyalty program.
+- Advertising must be targeted only to individuals eligible to participate.
+- All winners must sign an affidavit confirming eligibility and granting permission for use of name, image, likeness, and entry.
+- Winners receiving prizes above the reporting threshold must complete IRS Form W-9 and the sponsor must file a 1099-MISC or 1099-NEC.
+- Alcohol- and tobacco-related prizes are subject to additional regulatory scrutiny.
+
+REQUIREMENTS TRIGGERED BY THIS PROMOTION
+----------------------------------------
+- Winners receiving prizes valued over $600 require enhanced identity verification. (At least one prize exceeds $600)
+
+CONDITIONAL / RISK-BASED REQUIREMENTS
+----------------------------------------
+- Requiring entrants to visit a physical store is classified as consideration. (Applies only if certain actions or configurations are used)
+- Entrants may not be automatically entered unless the existence of an AMOE is clearly disclosed. (Applies only if certain actions or configurations are used)
+- Rhode Island registration is required only if the total prize value exceeds $500 and entry occurs at a physical retail location within the state. (Applies only if certain actions or configurations are used)
+- Alcohol- and tobacco-related prizes receive heightened scrutiny. (Applies only if certain actions or configurations are used)
+
+RULES EVALUATED BUT NOT TRIGGERED
+------------------------------------
+- If the total prize pool exceeds $5,000 and New York or Florida residents are eligible, the sweepstakes must be bonded and registered in each applicable state. (Jurisdiction applicable, but thresholds not met)
+

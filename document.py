@@ -91,7 +91,6 @@ class Document:
         self._winnerResponseTime: str
         self._prizeLevels: Dict[int, Prize] = {}
         self._hard_constraints = []
-        self._applied_constraints = []
 
 
     def _safe_filename(self) -> str:
@@ -126,12 +125,47 @@ class Document:
                     f.write(f"Level {level}: Gift Card - {prize.description}\n")
             f.write("\n")
 
-            f.write("HARD CONSTRAINTS APPLIED\n")
-            f.write("-" * 24 + "\n")
-            for c in self._applied_constraints:
-                f.write(f"- {c['rule']}\n")
 
-        print(f"\n📄 Compliance report written to: {filename}")
+            f.write("COMPLIANCE REQUIREMENTS SUMMARY\n")
+            f.write("-" * 32 + "\n\n")
+
+            sections = self._constraint_output
+
+            # ---- Foundational ----
+            f.write("FOUNDATIONAL LEGAL REQUIREMENTS\n")
+            f.write("-" * 32 + "\n")
+            for c in sections["foundational"]:
+                f.write(f"- {c['rule']}\n")
+            f.write("\n")
+
+            # ---- Triggered ----
+            f.write("REQUIREMENTS TRIGGERED BY THIS PROMOTION\n")
+            f.write("-" * 40 + "\n")
+            for c in sections["triggered"]:
+                f.write(f"- {c['rule']} ({c['reason']})\n")
+            f.write("\n")
+
+            # ---- Conditional ----
+            f.write("CONDITIONAL / RISK-BASED REQUIREMENTS\n")
+            f.write("-" * 40 + "\n")
+            for c in sections["conditional"]:
+                f.write(f"- {c['rule']} ({c['reason']})\n")
+            f.write("\n")
+
+            # ---- Evaluated but Not Triggered ----
+            if sections["evaluated_not_triggered"]:
+                f.write("RULES EVALUATED BUT NOT TRIGGERED\n")
+                f.write("-" * 36 + "\n")
+                for c in sections["evaluated_not_triggered"]:
+                    f.write(f"- {c['rule']} ({c['reason']})\n")
+                f.write("\n")
+
+            print(f"\n📄 Compliance report written to: {filename}")
+
+
+
+
+
     def _total_prize_value(self) -> float:
         total = 0.0
         for prize in self._prizeLevels.values():
@@ -195,8 +229,13 @@ class Document:
             if prize.prize_type == PrizeType.CASH:
                 if prize.amount is None or prize.amount <= 0:
                     raise ValueError(f"Cash prize at level {level} must have a positive amount")
+    
+    
     def apply_hard_constraints(self) -> None:
-        applied = []
+        foundational = []
+        triggered = []
+        conditional = []
+        evaluated_not_triggered = []
         warnings = []
 
         # ---- Normalize states ----
@@ -209,9 +248,7 @@ class Document:
                 normalized_states.add(s)
             elif s in STATE_NAME_TO_CODE:
                 normalized_states.add(STATE_NAME_TO_CODE[s])
-                warnings.append(
-                    f"State '{state}' normalized to '{STATE_NAME_TO_CODE[s]}'"
-                )
+                warnings.append(f"State '{state}' normalized to '{STATE_NAME_TO_CODE[s]}'")
             else:
                 warnings.append(
                     f"Unrecognized state '{state}'. State-specific constraints may not apply."
@@ -220,44 +257,77 @@ class Document:
         state_codes = {f"US-{s}" for s in normalized_states}
         total_prize_value = self._total_prize_value()
 
-        # ---- Apply constraints ----
         for constraint in self._hard_constraints:
             jurisdictions = set(constraint.get("jurisdictions", []))
             thresholds = constraint.get("thresholds", {})
+            rule = constraint["rule"]
+            category = constraint.get("category")
 
-            # ---- Threshold checks ----
-            if "total_prize_value_usd" in thresholds:
-                if total_prize_value <= thresholds["total_prize_value_usd"]:
-                    continue
 
-            if "prize_value_usd" in thresholds:
-                if total_prize_value <= thresholds["prize_value_usd"]:
-                    continue
-
-            # ---- Federal rules ----
-            if "US-FEDERAL" in jurisdictions:
-                applied.append(constraint)
+            # ---- Foundational rules (always true federal rules, no thresholds) ----
+            if "US-FEDERAL" in jurisdictions and not thresholds:
+                foundational.append({
+                    "rule": rule,
+                    "category": category,
+                    "reason": "Applies to all U.S. sweepstakes"
+                })
                 continue
 
-            # ---- State rules ----
-            if jurisdictions.intersection(state_codes):
-                applied.append(constraint)
+            # ---- Threshold-based checks ----
+            threshold_failed = False
+            reasons = []
 
-        self._applied_constraints = applied
+            if "total_prize_value_usd" in thresholds:
+                if total_prize_value > thresholds["total_prize_value_usd"]:
+                    reasons.append(
+                        f"Total prize value (${total_prize_value}) exceeds "
+                        f"${thresholds['total_prize_value_usd']}"
+                    )
+                else:
+                    threshold_failed = True
+
+            if "prize_value_usd" in thresholds:
+                if total_prize_value > thresholds["prize_value_usd"]:
+                    reasons.append(
+                        f"At least one prize exceeds ${thresholds['prize_value_usd']}"
+                    )
+                else:
+                    threshold_failed = True
+
+            # ---- Jurisdiction match ----
+            jurisdiction_match = (
+                "US-FEDERAL" in jurisdictions
+                or jurisdictions.intersection(state_codes)
+            )
+
+            # ---- Categorize ----
+            if jurisdiction_match and not threshold_failed:
+                triggered.append({
+                    "rule": rule,
+                    "category": category,
+                    "reason": "; ".join(reasons) if reasons else "Promotion configuration triggered this rule"
+                })
+            elif jurisdiction_match:
+                evaluated_not_triggered.append({
+                    "rule": rule,
+                    "category": category,
+                    "reason": "Jurisdiction applicable, but thresholds not met"
+                })
+            else:
+                conditional.append({
+                    "rule": rule,
+                    "category": category,
+                    "reason": "Applies only if certain actions or configurations are used"
+                })
+
+        self._constraint_output = {
+            "foundational": foundational,
+            "triggered": triggered,
+            "conditional": conditional,
+            "evaluated_not_triggered": evaluated_not_triggered
+        }
+
         self._constraint_warnings = warnings
-
-    def print_hard_constraints(self) -> None:
-        print("\nHARD CONSTRAINTS APPLIED:")
-        for c in self._applied_constraints:
-            print(f"- {c['rule']}")
-    def print_constraint_warnings(self) -> None:
-        if not getattr(self, "_constraint_warnings", None):
-            return
-
-        print("\n⚠️ CONSTRAINT WARNINGS:")
-        for w in self._constraint_warnings:
-            print(f"- {w}")
-
 
 
 def create_document() -> Document:
@@ -322,8 +392,6 @@ def main():
 
         doc.load_hard_constraints("hard_constraints.json")
         doc.apply_hard_constraints()
-        doc.print_hard_constraints()
-        doc.print_constraint_warnings()
 
         doc.validate()
 
