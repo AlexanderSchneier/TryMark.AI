@@ -3,6 +3,7 @@ from knowledge.retrieval import retrieve_relevant_chunks
 from generation.payload_builder import build_generation_payload
 import json
 
+
 def main():
     doc = create_document()
     doc.load_hard_constraints("hard_constraints.json")
@@ -21,22 +22,27 @@ def main():
         "entry_method": "unspecified",
         "in_store_entry": False
     }
-
     compliance_requirements = doc._constraint_output
+
+    print("\n=== CONSTRAINT OUTPUT ===\n")
+    print(json.dumps(compliance_requirements, indent=2))
+
     snippets = retrieve_relevant_chunks(compliance_requirements)
 
-    payload = build_generation_payload(
-        promotion_context=promotion_context,
-        compliance_requirements=compliance_requirements,
-        historical_snippets=snippets,
-        task="draft_official_rules",
-        section="Intro"
-    )
 
-    print("\n=== PAYLOAD SNAPSHOT ===\n")
-    print(json.dumps(payload, indent=2))
+    print("\n=== RETRIEVED KB CHUNKS ===\n")
+    for c in snippets:
+        print(
+            c.get("_category"),
+            "|",
+            c.get("section"),
+            "| score:",
+            c.get("_score")
+        )
 
     return  # STOP HERE
+
+
 
 if __name__ == "__main__":
     main()
