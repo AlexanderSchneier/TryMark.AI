@@ -5,7 +5,7 @@ client = OpenAI()
 
 def generate_text(payload: dict) -> str:
     response = client.responses.create(
-        model="gpt-4.1",
+        model="gpt-4.1-mini",
         input=[
             {
                 "role": "system",

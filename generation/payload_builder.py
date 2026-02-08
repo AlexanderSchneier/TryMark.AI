@@ -2,26 +2,41 @@ def build_generation_payload(
     promotion_context: dict,
     compliance_requirements: dict,
     historical_snippets: list[dict],
-    task: str,
-    section: str | None = None
+    section_name: str,
+    section_category: str,
 ) -> dict:
+
+    # pull only rules relevant to this section
+    section_rules = []
+    for group in compliance_requirements.values():
+        for rule in group:
+            if rule["category"] == section_category:
+                section_rules.append(rule["rule"])
+
     payload = {
-        "task": task,
+        "task": "generate_official_rules_section",
+        "section": {
+            "name": section_name,
+            "category": section_category,
+            "purpose": f"Draft the {section_name} section of a sweepstakes Official Rules document."
+        },
         "promotion": promotion_context,
-        "compliance_requirements": compliance_requirements,
+        "required_rules": section_rules,
         "historical_snippets": [
             {
                 "id": s["id"],
-                "doc_type": s["doc_type"],
                 "section": s.get("section"),
-                "channel": s.get("channel"),
                 "text": s["text"]
             }
             for s in historical_snippets
+        ],
+        "output_requirements": [
+            "Write ONLY this section.",
+            "Do not reference other sections.",
+            "Use formal legal drafting style.",
+            "Match the structure and tone of real Official Rules.",
+            "If required information is missing, explicitly state it."
         ]
     }
-
-    if section:
-        payload["section"] = section
 
     return payload

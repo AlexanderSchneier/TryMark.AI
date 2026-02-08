@@ -1,6 +1,8 @@
 from document import create_document
 from knowledge.retrieval import retrieve_relevant_chunks
 from generation.payload_builder import build_generation_payload
+from dotenv import load_dotenv
+load_dotenv()
 import json
 
 
