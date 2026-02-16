@@ -2,11 +2,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from document import create_document
-from knowledge.retrieval import retrieve_relevant_chunks
+from knowledge.retrieval import retrieve_relevant_chunks_for_section
 from generation.payload_builder import build_generation_payload
 from generation.generate import generate_text
 import json
-
 
 
 # Canonical Official Rules structure
@@ -45,6 +44,7 @@ SECTIONS = [
 
 
 def main():
+
     # 1️⃣ Collect promotion facts
     doc = create_document()
     doc.load_hard_constraints("hard_constraints.json")
@@ -55,13 +55,22 @@ def main():
         "name": doc._name,
         "states": doc._residence,
         "min_age": doc._minAge,
+
+        "start_time": doc._startTime,
+        "end_time": doc._endTime,
+        "winner_selection_time": doc._winnerTime,
+        "winner_response_deadline": doc._winnerResponseTime,
+
         "prizes": [
             {"type": p.prize_type.value, "amount": p.amount}
             for p in doc._prizeLevels.values()
         ],
+
         "total_prize_value": doc._total_prize_value(),
+
+        # You’ll replace this later with real logic
         "entry_method": "unspecified",
-        "in_store_entry": False
+        "in_store_entry": doc._inPersonEntry
     }
 
     compliance_requirements = doc._constraint_output
@@ -69,46 +78,59 @@ def main():
     print("\n=== CONSTRAINT OUTPUT ===\n")
     print(json.dumps(compliance_requirements, indent=2))
 
-    # 2️⃣ Retrieve KB chunks ONCE
-    snippets = retrieve_relevant_chunks(compliance_requirements)
 
-    print("\n=== RETRIEVED KB CHUNKS ===\n")
-    for c in snippets:
-        print(
-            c.get("_category"),
-            "|",
-            c.get("section"),
-            "| score:",
-            c.get("_score")
-        )
-
-    # 3️⃣ Generate document section-by-section
+    # 2️⃣ Generate document section-by-section (SECTION-AWARE RAG)
     print("\n=== GENERATING DOCUMENT SECTIONS ===\n")
 
     generated_sections = {}
 
     for section in SECTIONS:
+
         category = section["category"]
+        title = section["title"]
 
-        relevant_snippets = [
-            s for s in snippets
-            if s.get("_category") == category
-        ]
+        # 🔥 SECTION-AWARE RETRIEVAL
+        relevant_snippets = retrieve_relevant_chunks_for_section(
+            compliance_requirements,
+            section_category=category,
+            section_title=title,
+            top_k=6,                    # Tune between 4–8
+            always_include_baseline=True,
+            min_score=15
+        )
 
+        # ---- Debug Output (Very Important For Tuning) ----
+        print(f"\n=== RAG FOR: {title} ({category}) ===")
+
+        if not relevant_snippets:
+            print("  ⚠️ No snippets retrieved.")
+        else:
+            for i, c in enumerate(relevant_snippets, 1):
+                print(
+                    f"  [{i}] {c.get('id')} | "
+                    f"section={c.get('section')} | "
+                    f"score={c.get('_score')} | "
+                    f"hard={c.get('hard_constraint')}"
+                )
+                preview = c.get("text", "")[:160].replace("\n", " ")
+                print(f"      preview: {preview}")
+
+        # ---- Build Payload ----
         payload = build_generation_payload(
             promotion_context,
             compliance_requirements,
             relevant_snippets,
-            section_name=section["title"],
+            section_name=title,
             section_category=category
         )
 
-        print(f"→ Generating section: {section['title']}")
+        print(f"→ Generating section: {title}")
 
         section_text = generate_text(payload)
         generated_sections[section["id"]] = section_text
 
-    # 4️⃣ Assemble final document deterministically
+
+    # 3️⃣ Assemble final document deterministically
     print("\n\n=== FINAL GENERATED DOCUMENT ===\n")
 
     for section in SECTIONS:
