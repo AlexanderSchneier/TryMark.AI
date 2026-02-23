@@ -6,6 +6,7 @@ from knowledge.retrieval import retrieve_relevant_chunks_for_section
 from generation.payload_builder import build_generation_payload
 from generation.generate import generate_text
 import json
+from docx import Document
 
 
 # Canonical Official Rules structure
@@ -129,16 +130,31 @@ def main():
         section_text = generate_text(payload)
         generated_sections[section["id"]] = section_text
 
-
-    # 3️⃣ Assemble final document deterministically
     print("\n\n=== FINAL GENERATED DOCUMENT ===\n")
 
-    for section in SECTIONS:
-        print(section["title"].upper())
-        print("-" * len(section["title"]))
-        print(generated_sections.get(section["id"], ""))
-        print("\n")
+    document = Document()
 
+    # Optional: Title Page Header
+    document.add_heading("OFFICIAL SWEEPSTAKES RULES", level=1)
+
+    for section in SECTIONS:
+        title = section["title"]
+        content = generated_sections.get(section["id"], "")
+
+        # Add section title as proper Word heading
+        document.add_heading(title, level=2)
+
+        # Preserve line breaks from model output
+        for line in content.split("\n"):
+            document.add_paragraph(line)
+
+    # Dynamic filename using sweepstakes name
+    safe_name = promotion_context["name"].replace(" ", "_")
+    filename = f"{safe_name}_Official_Rules.docx"
+
+    document.save(filename)
+
+    print(f"✅ Document saved as {filename}")
 
 if __name__ == "__main__":
     main()

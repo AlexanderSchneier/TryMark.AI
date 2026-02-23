@@ -3,8 +3,6 @@ from openai import OpenAI
 from openai import RateLimitError, APIError
 from generation.prompts import SYSTEM_PROMPT
 
-client = OpenAI()
-
 MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4.1")
 
 
@@ -13,7 +11,9 @@ def generate_text(payload: dict) -> str:
     Sends a structured drafting prompt to OpenAI and returns the generated section text.
     """
 
-    # We now expect payload to contain a single drafting prompt string
+    # 🔥 Create client INSIDE the function
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
     prompt_text = payload.get("prompt")
 
     if not prompt_text:
@@ -32,7 +32,7 @@ def generate_text(payload: dict) -> str:
                     "content": prompt_text
                 }
             ],
-            temperature=0.2,  # Low temperature = stable legal drafting
+            temperature=0.2,
         )
 
         return response.output_text.strip()
