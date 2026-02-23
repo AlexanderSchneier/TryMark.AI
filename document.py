@@ -172,6 +172,20 @@ class Document:
             if prize.prize_type == PrizeType.CASH and prize.amount:
                 total += prize.amount
         return total
+    def _max_prize_value(self) -> float:
+        vals = []
+        for prize in self._prizeLevels.values():
+            if prize.prize_type == PrizeType.CASH and prize.amount:
+                vals.append(float(prize.amount))
+            # Gift cards can be handled later when you add a value field
+        return max(vals) if vals else 0.0
+
+
+    def _any_prize_exceeds(self, threshold: float) -> bool:
+        for prize in self._prizeLevels.values():
+            if prize.prize_type == PrizeType.CASH and prize.amount and float(prize.amount) > threshold:
+                return True
+        return False
 
     def load_hard_constraints(self, path: str) -> None:
         with open(path, "r") as f:
@@ -260,6 +274,7 @@ class Document:
         for constraint in self._hard_constraints:
             jurisdictions = set(constraint.get("jurisdictions", []))
             thresholds = constraint.get("thresholds", {})
+            cid = constraint.get("id")
             rule = constraint["rule"]
             category = constraint.get("category")
 
@@ -267,6 +282,7 @@ class Document:
             # ---- Foundational rules (always true federal rules, no thresholds) ----
             if "US-FEDERAL" in jurisdictions and not thresholds:
                 foundational.append({
+                    "id": cid,
                     "rule": rule,
                     "category": category,
                     "reason": "Applies to all U.S. sweepstakes"
@@ -287,13 +303,12 @@ class Document:
                     threshold_failed = True
 
             if "prize_value_usd" in thresholds:
-                if total_prize_value > thresholds["prize_value_usd"]:
+                if self._any_prize_exceeds(thresholds["prize_value_usd"]):
                     reasons.append(
                         f"At least one prize exceeds ${thresholds['prize_value_usd']}"
                     )
                 else:
                     threshold_failed = True
-
             # ---- Jurisdiction match ----
             jurisdiction_match = (
                 "US-FEDERAL" in jurisdictions
@@ -303,18 +318,21 @@ class Document:
             # ---- Categorize ----
             if jurisdiction_match and not threshold_failed:
                 triggered.append({
+                    "id": cid,
                     "rule": rule,
                     "category": category,
                     "reason": "; ".join(reasons) if reasons else "Promotion configuration triggered this rule"
                 })
             elif jurisdiction_match:
                 evaluated_not_triggered.append({
+                    "id": cid,
                     "rule": rule,
                     "category": category,
                     "reason": "Jurisdiction applicable, but thresholds not met"
                 })
             else:
                 conditional.append({
+                    "id": cid,
                     "rule": rule,
                     "category": category,
                     "reason": "Applies only if certain actions or configurations are used"

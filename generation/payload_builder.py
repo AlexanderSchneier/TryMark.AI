@@ -4,6 +4,7 @@ def build_generation_payload(
     historical_snippets: list[dict],
     section_name: str,
     section_category: str,
+    required_clauses: list[dict] | None = None,
 ) -> dict:
 
     # ------------------------------------------------------------------
@@ -28,9 +29,21 @@ def build_generation_payload(
 
             section_rules.append(rule["rule"])
 
+    # ------------------------------------------------------------------
+    # 2️⃣ Prize Breakdown (Prevents Structure Hallucination)
+    # ------------------------------------------------------------------
+    prize_lines = []
+
+    for i, p in enumerate(promotion_context.get("prizes", []), start=1):
+        if p.get("type") == "cash":
+            prize_lines.append(f"Level {i}: Cash - ${p.get('amount')}")
+        elif p.get("type") == "giftcard":
+            prize_lines.append(f"Level {i}: Gift Card - {p.get('description')}")
+
+    prize_block = "\n".join(prize_lines) if prize_lines else "None"
 
     # ------------------------------------------------------------------
-    # 2️⃣ Structured Promotion Facts Block
+    # 3️⃣ Structured Promotion Facts Block
     # ------------------------------------------------------------------
     promotion_facts_block = f"""
 PROMOTION FACTS (DO NOT INVENT OR OMIT):
@@ -42,12 +55,37 @@ Start Date/Time: {promotion_context.get("start_time")}
 End Date/Time: {promotion_context.get("end_time")}
 Winner Selection Time: {promotion_context.get("winner_selection_time")}
 Winner Response Deadline: {promotion_context.get("winner_response_deadline")}
+
+Primary Prize Type: {promotion_context.get("primary_prize_type")}
+Number of Prize Levels: {len(promotion_context.get("prizes", []))}
+
+Prize Levels (MUST be drafted exactly as listed):
+{prize_block}
+
 Total Prize Value: ${promotion_context.get("total_prize_value")}
 """
 
+    # ------------------------------------------------------------------
+    # 4️⃣ Filter Historical Snippets (Eligibility Fix)
+    #    Prevent "50 US & DC" contamination when states are restricted
+    # ------------------------------------------------------------------
+    if section_category == "eligibility" and promotion_context.get("states"):
+        filtered_snippets = []
+        for s in historical_snippets or []:
+            text_lower = (s.get("text") or "").lower()
+            if (
+                "50 us" in text_lower
+                or "50 united states" in text_lower
+                or "washington, d.c" in text_lower
+                or "and dc" in text_lower
+                or "and d.c" in text_lower
+            ):
+                continue
+            filtered_snippets.append(s)
+        historical_snippets = filtered_snippets
 
     # ------------------------------------------------------------------
-    # 3️⃣ Historical Snippets Block
+    # 5️⃣ Historical Snippets Block
     # ------------------------------------------------------------------
     if historical_snippets:
         snippets_block = "\n\n".join(
@@ -57,18 +95,27 @@ Total Prize Value: ${promotion_context.get("total_prize_value")}
     else:
         snippets_block = "None provided."
 
-
     # ------------------------------------------------------------------
-    # 4️⃣ Compliance Rules Block
+    # 6️⃣ Compliance Rules Block
     # ------------------------------------------------------------------
     if section_rules:
         rules_block = "\n".join(f"- {r}" for r in section_rules)
     else:
         rules_block = "None specifically applicable beyond general compliance."
 
+    # ------------------------------------------------------------------
+    # 7️⃣ Mandatory Clause Block (Future Enforcement Layer)
+    # ------------------------------------------------------------------
+    if required_clauses:
+        clauses_block = "\n".join(
+            f"- [{c.get('id')}] {c.get('text')}"
+            for c in required_clauses
+        )
+    else:
+        clauses_block = "None"
 
     # ------------------------------------------------------------------
-    # 5️⃣ Base Instruction Prompt
+    # 8️⃣ Base Instruction Prompt
     # ------------------------------------------------------------------
     instruction_prompt = f"""
 You are drafting the "{section_name}" section of a U.S. sweepstakes Official Rules document.
@@ -79,13 +126,22 @@ INSTRUCTIONS:
 - Use formal legal drafting style.
 - Follow the tone and structure of real Official Rules.
 - Use the Promotion Facts exactly as provided.
-- Do NOT say information is missing if it appears in the Promotion Facts.
-- Do NOT invent additional prizes, states, dates, or eligibility criteria.
+- Do NOT invent additional prizes, states, dates, eligibility criteria, or prize structure.
+- Do NOT contradict compliance requirements.
+- Do NOT reintroduce 50-state eligibility language if specific states are listed.
 
 {promotion_facts_block}
 
 APPLICABLE COMPLIANCE REQUIREMENTS:
 {rules_block}
+
+MANDATORY CLAUSES (MUST APPEAR VERBATIM IF LISTED):
+{clauses_block}
+
+If any Mandatory Clauses are listed above:
+- You MUST include them exactly.
+- Do NOT paraphrase them.
+- They must appear clearly within this section.
 
 RELEVANT HISTORICAL LANGUAGE (for structure and tone only — do not copy verbatim):
 {snippets_block}
@@ -93,9 +149,8 @@ RELEVANT HISTORICAL LANGUAGE (for structure and tone only — do not copy verbat
 Generate the final drafted section below:
 """
 
-
     # ------------------------------------------------------------------
-    # 6️⃣ Prize-Specific Enforcement
+    # 9️⃣ Prize-Specific Enforcement
     # ------------------------------------------------------------------
     if section_category == "prizes":
         instruction_prompt += """
@@ -106,8 +161,8 @@ PRIZE DRAFTING REQUIREMENTS (MANDATORY):
 - State the individual dollar amount for each prize level.
 - Clearly calculate and state the total approximate retail value (ARV).
 - Do NOT consolidate multiple prize levels into a single prize.
+- Do NOT describe the prize as a single item if multiple levels exist.
 """
-
 
     return {
         "prompt": instruction_prompt
