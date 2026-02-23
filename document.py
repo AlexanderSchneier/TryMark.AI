@@ -91,7 +91,9 @@ class Document:
         self._winnerResponseTime: str
         self._prizeLevels: Dict[int, Prize] = {}
         self._hard_constraints = []
-
+        self._entryChannel: str | None = None
+        self._entryUrl: str | None = None
+        self._entryFields: list[str] = []
 
     def _safe_filename(self) -> str:
         return self._name.strip().replace(" ", "_") + ".txt"
@@ -360,7 +362,6 @@ def create_document(from_api_data: dict | None = None) -> Document:
         doc._doorCount = from_api_data.get("door_count", 1)
         doc._doorLocation = from_api_data.get("door_location", "")
 
-        # Primary prize type
         primary_prize = from_api_data.get("primary_prize_type", "cash").lower()
         if primary_prize == "cash":
             doc._prizes = PrizeType.CASH
@@ -369,21 +370,23 @@ def create_document(from_api_data: dict | None = None) -> Document:
         else:
             raise ValueError("Invalid prize type")
 
-        # Age
         doc._minAge = from_api_data["min_age"]
         if doc._minAge not in (18, 21):
             raise ValueError("Minimum age must be 18 or 21")
 
-        # Residence
         doc._residence = from_api_data["states"]
 
-        # Times
         doc._startTime = from_api_data["start_time"]
         doc._endTime = from_api_data["end_time"]
         doc._winnerTime = from_api_data["winner_selection_time"]
         doc._winnerResponseTime = from_api_data["winner_response_deadline"]
 
-        # Prize levels
+        # 🔥 ENTRY METHOD (NEW)
+        entry_data = from_api_data.get("entry_method", {})
+        doc._entryChannel = entry_data.get("channel")
+        doc._entryUrl = entry_data.get("url")
+        doc._entryFields = entry_data.get("required_fields", [])
+
         for idx, prize_data in enumerate(from_api_data["prizes"], start=1):
 
             if prize_data["type"] == "cash":
@@ -404,6 +407,66 @@ def create_document(from_api_data: dict | None = None) -> Document:
             doc._prizeLevels[idx] = prize
 
         return doc
+
+    # -------------------------------
+    # CLI MODE
+    # -------------------------------
+
+    doc._name = input("Sweepstakes name: ").strip()
+    doc._doorCount = int(input("How many physical locations are offering this promotion? ").strip())
+    doc._doorLocation = input("Where are the locations? ").strip()
+
+    prize_type_input = input("Primary prize type (cash/giftcard): ").strip().lower()
+    if prize_type_input == "cash":
+        doc._prizes = PrizeType.CASH
+    elif prize_type_input == "giftcard":
+        doc._prizes = PrizeType.GIFTCARD
+    else:
+        raise ValueError("Invalid prize type")
+
+    age_input = int(input("Minimum age (18 or 21): ").strip())
+    if age_input not in (18, 21):
+        raise ValueError("Minimum age must be 18 or 21")
+    doc._minAge = age_input
+
+    states = input("Eligible states (comma-separated): ").strip()
+    doc._residence = [s.strip() for s in states.split(",") if s.strip()]
+
+    doc._startTime = input("Start time: ").strip()
+    doc._endTime = input("End time: ").strip()
+    doc._winnerTime = input("Winner selection time: ").strip()
+    doc._winnerResponseTime = input("Winner response deadline: ").strip()
+
+    # 🔥 ENTRY METHOD (NEW CLI INPUT)
+    print("\n--- Entry Method ---")
+    doc._entryChannel = input("Entry channel (web/mail/in_store/social): ").strip().lower()
+
+    if doc._entryChannel == "web":
+        doc._entryUrl = input("Website URL: ").strip()
+        fields = input("Required fields (comma separated, e.g. name,email,phone): ").strip()
+        doc._entryFields = [f.strip() for f in fields.split(",") if f.strip()]
+
+    num_levels = int(input("How many prize levels are there? ").strip())
+    if num_levels <= 0:
+        raise ValueError("Number of prize levels must be positive")
+
+    for i in range(1, num_levels + 1):
+        print(f"\n--- Prize Level {i} ---")
+        level = int(input("Level number: ").strip())
+
+        ptype = input("Prize type (cash/giftcard): ").strip().lower()
+        if ptype == "cash":
+            amount = float(input("Cash amount: ").strip())
+            prize = Prize(PrizeType.CASH, amount=amount)
+        elif ptype == "giftcard":
+            description = input("Gift card description: ").strip()
+            prize = Prize(PrizeType.GIFTCARD, description=description)
+        else:
+            raise ValueError("Invalid prize type")
+
+        doc._prizeLevels[level] = prize
+
+    return doc
 
     # -------------------------------
     # CLI MODE (your existing logic)

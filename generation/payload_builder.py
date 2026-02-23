@@ -18,8 +18,6 @@ def build_generation_payload(
             if rule["category"] != section_category:
                 continue
 
-            # Prevent broad federal 50-state language from overriding
-            # specific state-restricted promotions
             if (
                 section_category == "eligibility"
                 and "50 United States" in rule["rule"]
@@ -66,8 +64,40 @@ Total Prize Value: ${promotion_context.get("total_prize_value")}
 """
 
     # ------------------------------------------------------------------
-    # 4️⃣ Filter Historical Snippets (Eligibility Fix)
-    #    Prevent "50 US & DC" contamination when states are restricted
+    # 4️⃣ ENTRY METHOD FACTS BLOCK (NEW - STRUCTURED)
+    # ------------------------------------------------------------------
+    entry = promotion_context.get("entry_method", {})
+    entry_block = ""
+
+    if entry and entry.get("channel"):
+        channel = entry.get("channel")
+
+        if channel == "web":
+            fields = ", ".join(entry.get("required_fields", []))
+            entry_block = f"""
+ENTRY METHOD DETAILS (DO NOT INVENT):
+Channel: Web Entry
+Website URL: {entry.get("url")}
+Required Fields: {fields}
+"""
+        elif channel == "mail":
+            entry_block = """
+ENTRY METHOD DETAILS (DO NOT INVENT):
+Channel: Mail-In Entry
+"""
+        elif channel == "in_store":
+            entry_block = """
+ENTRY METHOD DETAILS (DO NOT INVENT):
+Channel: In-Store Entry
+"""
+        elif channel == "social":
+            entry_block = """
+ENTRY METHOD DETAILS (DO NOT INVENT):
+Channel: Social Media Entry
+"""
+
+    # ------------------------------------------------------------------
+    # 5️⃣ Filter Historical Snippets (Eligibility Fix)
     # ------------------------------------------------------------------
     if section_category == "eligibility" and promotion_context.get("states"):
         filtered_snippets = []
@@ -85,7 +115,7 @@ Total Prize Value: ${promotion_context.get("total_prize_value")}
         historical_snippets = filtered_snippets
 
     # ------------------------------------------------------------------
-    # 5️⃣ Historical Snippets Block
+    # 6️⃣ Historical Snippets Block
     # ------------------------------------------------------------------
     if historical_snippets:
         snippets_block = "\n\n".join(
@@ -96,7 +126,7 @@ Total Prize Value: ${promotion_context.get("total_prize_value")}
         snippets_block = "None provided."
 
     # ------------------------------------------------------------------
-    # 6️⃣ Compliance Rules Block
+    # 7️⃣ Compliance Rules Block
     # ------------------------------------------------------------------
     if section_rules:
         rules_block = "\n".join(f"- {r}" for r in section_rules)
@@ -104,7 +134,7 @@ Total Prize Value: ${promotion_context.get("total_prize_value")}
         rules_block = "None specifically applicable beyond general compliance."
 
     # ------------------------------------------------------------------
-    # 7️⃣ Mandatory Clause Block (Future Enforcement Layer)
+    # 8️⃣ Mandatory Clause Block
     # ------------------------------------------------------------------
     if required_clauses:
         clauses_block = "\n".join(
@@ -115,7 +145,7 @@ Total Prize Value: ${promotion_context.get("total_prize_value")}
         clauses_block = "None"
 
     # ------------------------------------------------------------------
-    # 8️⃣ Base Instruction Prompt
+    # 9️⃣ Base Instruction Prompt
     # ------------------------------------------------------------------
     instruction_prompt = f"""
 You are drafting the "{section_name}" section of a U.S. sweepstakes Official Rules document.
@@ -129,8 +159,14 @@ INSTRUCTIONS:
 - Do NOT invent additional prizes, states, dates, eligibility criteria, or prize structure.
 - Do NOT contradict compliance requirements.
 - Do NOT reintroduce 50-state eligibility language if specific states are listed.
+- If drafting the "How to Enter" section:
+  - Use the ENTRY METHOD DETAILS exactly as provided.
+  - Do NOT invent additional entry mechanics.
+  - If Web entry is listed, clearly state the URL and required fields.
 
 {promotion_facts_block}
+
+{entry_block}
 
 APPLICABLE COMPLIANCE REQUIREMENTS:
 {rules_block}
@@ -150,7 +186,7 @@ Generate the final drafted section below:
 """
 
     # ------------------------------------------------------------------
-    # 9️⃣ Prize-Specific Enforcement
+    # 🔟 Prize-Specific Enforcement
     # ------------------------------------------------------------------
     if section_category == "prizes":
         instruction_prompt += """

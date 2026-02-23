@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from generate_service import generate_official_rules
@@ -25,7 +25,6 @@ def verify(credentials: HTTPBasicCredentials = Depends(security)):
             headers={"WWW-Authenticate": "Basic"},
         )
 
-# Allow browser access (important for UI)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,10 +33,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# -----------------------------
+# MODELS
+# -----------------------------
 
 class Prize(BaseModel):
     type: str
-    amount: float
+    amount: float | None = None
+    description: str | None = None
+
+
+class EntryMethod(BaseModel):
+    channel: str
+    url: str | None = None
+    required_fields: list[str] = []
 
 
 class SweepstakesRequest(BaseModel):
@@ -53,6 +62,14 @@ class SweepstakesRequest(BaseModel):
     winner_response_deadline: str
     prizes: list[Prize]
 
+    # 🔥 NEW
+    entry_method: EntryMethod
+
+
+# -----------------------------
+# GENERATE ENDPOINT
+# -----------------------------
+
 @app.post("/generate")
 def generate_rules(
     request: SweepstakesRequest,
@@ -65,8 +82,11 @@ def generate_rules(
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers={"Content-Disposition": "attachment; filename=official_rules.docx"}
     )
-from fastapi.responses import HTMLResponse
 
+
+# -----------------------------
+# FRONTEND UI
+# -----------------------------
 
 @app.get("/", response_class=HTMLResponse)
 def homepage(credentials: HTTPBasicCredentials = Depends(verify)):
@@ -77,11 +97,12 @@ def homepage(credentials: HTTPBasicCredentials = Depends(verify)):
 <title>TryMark.AI</title>
 <style>
 body { font-family: sans-serif; background: #f4f4f4; display:flex; justify-content:center; padding:40px; }
-.card { background:white; width:600px; padding:30px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.1);}
+.card { background:white; width:700px; padding:30px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.1);}
 h2 { margin-top:0;}
 input, select { width:100%; padding:8px; margin:8px 0;}
 button { padding:10px 15px; background:black; color:white; border:none; margin-top:10px; cursor:pointer;}
 .prize-block { border:1px solid #ddd; padding:10px; margin-top:10px; border-radius:6px;}
+.section { margin-top:20px; padding-top:10px; border-top:1px solid #eee;}
 </style>
 </head>
 <body>
@@ -92,16 +113,34 @@ button { padding:10px 15px; background:black; color:white; border:none; margin-t
 <input id="name" placeholder="Sweepstakes Name">
 <input id="door_count" type="number" placeholder="Door Count">
 <input id="door_location" placeholder="Door Location">
+
 <select id="primary_prize_type">
   <option value="cash">Cash</option>
   <option value="giftcard">Gift Card</option>
 </select>
+
 <input id="min_age" type="number" placeholder="Minimum Age (18 or 21)">
 <input id="states" placeholder="Eligible States (comma separated)">
 <input id="start_time" placeholder="Start Time">
 <input id="end_time" placeholder="End Time">
 <input id="winner_selection_time" placeholder="Winner Selection Time">
 <input id="winner_response_deadline" placeholder="Winner Response Deadline">
+
+<div class="section">
+<h3>Entry Method</h3>
+
+<select id="entry_channel" onchange="toggleEntryFields()">
+  <option value="web">Web</option>
+  <option value="mail">Mail</option>
+  <option value="in_store">In-Store</option>
+  <option value="social">Social Media</option>
+</select>
+
+<div id="webFields">
+  <input id="entry_url" placeholder="Website URL">
+  <input id="entry_fields" placeholder="Required fields (comma separated e.g. name,email,phone)">
+</div>
+</div>
 
 <h3>Prize Levels</h3>
 <div id="prizeContainer"></div>
@@ -114,7 +153,21 @@ button { padding:10px 15px; background:black; color:white; border:none; margin-t
 </div>
 
 <script>
+
 let prizeCount = 0;
+
+function toggleEntryFields() {
+  const channel = document.getElementById("entry_channel").value;
+  const webFields = document.getElementById("webFields");
+
+  if(channel === "web"){
+    webFields.style.display = "block";
+  } else {
+    webFields.style.display = "none";
+  }
+}
+
+toggleEntryFields();
 
 function addPrize() {
   prizeCount++;
@@ -124,20 +177,19 @@ function addPrize() {
   block.className = "prize-block";
   block.innerHTML = `
     <label>Level ${prizeCount}</label>
-    <input type="hidden" value="${prizeCount}" class="level-number">
     <select class="prize-type">
       <option value="cash">Cash</option>
       <option value="giftcard">Gift Card</option>
     </select>
-    <input placeholder="Amount (for cash) or Description (for gift card)" class="prize-value">
+    <input placeholder="Amount (cash) or Description (gift card)" class="prize-value">
   `;
   container.appendChild(block);
 }
 
 async function generate() {
+
   const prizes = [];
   document.querySelectorAll(".prize-block").forEach(block => {
-    const level = block.querySelector(".level-number").value;
     const type = block.querySelector(".prize-type").value;
     const value = block.querySelector(".prize-value").value;
 
@@ -154,6 +206,8 @@ async function generate() {
     }
   });
 
+  const entryChannel = document.getElementById("entry_channel").value;
+
   const payload = {
     name: document.getElementById("name").value,
     door_count: parseInt(document.getElementById("door_count").value),
@@ -165,7 +219,15 @@ async function generate() {
     end_time: document.getElementById("end_time").value,
     winner_selection_time: document.getElementById("winner_selection_time").value,
     winner_response_deadline: document.getElementById("winner_response_deadline").value,
-    prizes: prizes
+    prizes: prizes,
+
+    entry_method: {
+      channel: entryChannel,
+      url: entryChannel === "web" ? document.getElementById("entry_url").value : null,
+      required_fields: entryChannel === "web"
+        ? document.getElementById("entry_fields").value.split(",").map(f=>f.trim())
+        : []
+    }
   };
 
   document.getElementById("status").innerText = "Generating...";
@@ -190,6 +252,7 @@ async function generate() {
 
   document.getElementById("status").innerText = "Done.";
 }
+
 </script>
 
 </body>

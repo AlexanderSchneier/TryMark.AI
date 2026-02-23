@@ -69,10 +69,16 @@ def main():
 
         "total_prize_value": doc._total_prize_value(),
 
-        # You’ll replace this later with real logic
-        "entry_method": "unspecified",
+        # 🔥 NEW STRUCTURED ENTRY METHOD
+        "entry_method": {
+            "channel": doc._entryChannel,
+            "url": doc._entryUrl,
+            "required_fields": doc._entryFields
+        },
+
         "in_store_entry": doc._inPersonEntry
     }
+
 
     compliance_requirements = doc._constraint_output
 

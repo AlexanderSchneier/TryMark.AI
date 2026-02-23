@@ -96,7 +96,7 @@ def generate_official_rules(form_data: dict):
         "end_time": doc._endTime,
         "winner_selection_time": doc._winnerTime,
         "winner_response_deadline": doc._winnerResponseTime,
-        "primary_prize_type": doc._prizes.value,  # ✅ important for payload_builder facts block
+        "primary_prize_type": doc._prizes.value,
         "prizes": [
             (
                 {"type": p.prize_type.value, "amount": p.amount}
@@ -106,7 +106,14 @@ def generate_official_rules(form_data: dict):
             for p in doc._prizeLevels.values()
         ],
         "total_prize_value": doc._total_prize_value(),
-        "entry_method": "unspecified",
+
+        # 🔥 NEW STRUCTURED ENTRY METHOD
+        "entry_method": {
+            "channel": doc._entryChannel,
+            "url": doc._entryUrl,
+            "required_fields": doc._entryFields
+        },
+
         "in_store_entry": doc._inPersonEntry
     }
 
