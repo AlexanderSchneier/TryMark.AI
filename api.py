@@ -1,29 +1,22 @@
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse, HTMLResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from generate_service import generate_official_rules
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi import Depends, HTTPException, status
 import secrets
 
-security = HTTPBasic()
+CORRECT_USERNAME = "internal"
+CORRECT_PASSWORD = "TryMarkSecure123"
+SESSION_TOKEN = "trymark-session-ok"
 
-def verify(credentials: HTTPBasicCredentials = Depends(security)):
-    correct_username = "internal"
-    correct_password = "TryMarkSecure123"
-
-    if not (
-        secrets.compare_digest(credentials.username, correct_username)
-        and secrets.compare_digest(credentials.password, correct_password)
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={"WWW-Authenticate": "Basic"},
-        )
+def verify(request: Request):
+    token = request.headers.get("X-Session-Token")
+    if token != SESSION_TOKEN:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,12 +60,21 @@ class SweepstakesRequest(BaseModel):
 
 
 # -----------------------------
-# AUTH CHECK ENDPOINT
+# LOGIN ENDPOINT
 # -----------------------------
 
-@app.get("/auth-check")
-def auth_check(credentials: HTTPBasicCredentials = Depends(verify)):
-    return {"ok": True}
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+@app.post("/login")
+def login(body: LoginRequest):
+    if not (
+        secrets.compare_digest(body.username, CORRECT_USERNAME)
+        and secrets.compare_digest(body.password, CORRECT_PASSWORD)
+    ):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    return {"token": SESSION_TOKEN}
 
 
 # -----------------------------
@@ -82,7 +84,7 @@ def auth_check(credentials: HTTPBasicCredentials = Depends(verify)):
 @app.post("/generate")
 def generate_rules(
     request: SweepstakesRequest,
-    credentials: HTTPBasicCredentials = Depends(verify)
+    _auth: None = Depends(verify)
 ):
     buffer = generate_official_rules(request.dict())
 
@@ -178,19 +180,21 @@ button { padding:10px 15px; background:black; color:white; border:none; margin-t
 <script>
 
 let prizeCount = 0;
-let authHeader = "";
+let sessionToken = "";
 
 async function doLogin() {
   const user = document.getElementById("loginUser").value;
   const pass = document.getElementById("loginPass").value;
-  const encoded = btoa(user + ":" + pass);
 
-  const resp = await fetch("/auth-check", {
-    headers: { "Authorization": "Basic " + encoded }
+  const resp = await fetch("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: user, password: pass })
   });
 
   if (resp.ok) {
-    authHeader = "Basic " + encoded;
+    const data = await resp.json();
+    sessionToken = data.token;
     document.getElementById("loginOverlay").style.display = "none";
     document.getElementById("mainCard").style.display = "block";
   } else {
@@ -282,7 +286,7 @@ async function generate() {
 
   const response = await fetch("/generate", {
     method: "POST",
-    headers: {"Content-Type":"application/json", "Authorization": authHeader},
+    headers: {"Content-Type":"application/json", "X-Session-Token": sessionToken},
     body: JSON.stringify(payload)
   });
 
