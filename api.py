@@ -67,6 +67,15 @@ class SweepstakesRequest(BaseModel):
 
 
 # -----------------------------
+# AUTH CHECK ENDPOINT
+# -----------------------------
+
+@app.get("/auth-check")
+def auth_check(credentials: HTTPBasicCredentials = Depends(verify)):
+    return {"ok": True}
+
+
+# -----------------------------
 # GENERATE ENDPOINT
 # -----------------------------
 
@@ -89,7 +98,7 @@ def generate_rules(
 # -----------------------------
 
 @app.get("/", response_class=HTMLResponse)
-def homepage(credentials: HTTPBasicCredentials = Depends(verify)):
+def homepage():
     return """
 <!DOCTYPE html>
 <html>
@@ -103,11 +112,25 @@ input, select { width:100%; padding:8px; margin:8px 0;}
 button { padding:10px 15px; background:black; color:white; border:none; margin-top:10px; cursor:pointer;}
 .prize-block { border:1px solid #ddd; padding:10px; margin-top:10px; border-radius:6px;}
 .section { margin-top:20px; padding-top:10px; border-top:1px solid #eee;}
+#loginOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:1000; }
+#loginBox { background:white; padding:30px; border-radius:10px; width:320px; box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+#loginBox h3 { margin-top:0; }
+#loginError { color:red; font-size:0.9em; display:none; margin-top:8px; }
 </style>
 </head>
 <body>
 
-<div class="card">
+<div id="loginOverlay">
+  <div id="loginBox">
+    <h3>TryMark.AI – Login</h3>
+    <input id="loginUser" placeholder="Username" type="text">
+    <input id="loginPass" placeholder="Password" type="password">
+    <button onclick="doLogin()">Login</button>
+    <div id="loginError">Invalid username or password.</div>
+  </div>
+</div>
+
+<div class="card" id="mainCard" style="display:none">
 <h2>TryMark.AI – Official Rules Generator</h2>
 
 <input id="name" placeholder="Sweepstakes Name">
@@ -155,6 +178,31 @@ button { padding:10px 15px; background:black; color:white; border:none; margin-t
 <script>
 
 let prizeCount = 0;
+let authHeader = "";
+
+async function doLogin() {
+  const user = document.getElementById("loginUser").value;
+  const pass = document.getElementById("loginPass").value;
+  const encoded = btoa(user + ":" + pass);
+
+  const resp = await fetch("/auth-check", {
+    headers: { "Authorization": "Basic " + encoded }
+  });
+
+  if (resp.ok) {
+    authHeader = "Basic " + encoded;
+    document.getElementById("loginOverlay").style.display = "none";
+    document.getElementById("mainCard").style.display = "block";
+  } else {
+    document.getElementById("loginError").style.display = "block";
+  }
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && document.getElementById("loginOverlay").style.display !== "none") {
+    doLogin();
+  }
+});
 
 function toggleEntryFields() {
   const channel = document.getElementById("entry_channel").value;
@@ -234,7 +282,7 @@ async function generate() {
 
   const response = await fetch("/generate", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
+    headers: {"Content-Type":"application/json", "Authorization": authHeader},
     body: JSON.stringify(payload)
   });
 
